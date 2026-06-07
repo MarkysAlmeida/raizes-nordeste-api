@@ -5,4 +5,6 @@ import br.com.raizesdonordeste.api.model.enums.FormaPagamento;
 public class PagamentoRequest {
 
     public FormaPagamento formaPagamento;
+
+    public Boolean usarPontos;
 }

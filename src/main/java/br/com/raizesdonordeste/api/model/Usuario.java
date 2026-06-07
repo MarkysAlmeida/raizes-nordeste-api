@@ -25,5 +25,10 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @ManyToOne
+    private Unidade unidade;
+
     private Integer pontosFidelidade = 0;
+
+    private Boolean ativo = true;
 }

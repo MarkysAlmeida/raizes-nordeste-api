@@ -34,6 +34,10 @@ public class EstoqueService {
         Unidade unidade = unidadeRepository.findById(request.unidadeId)
                 .orElseThrow(() -> new RuntimeException("Unidade não encontrada"));
 
+        if (estoqueRepository.existsByProdutoAndUnidade(produto, unidade)) {
+            throw new RuntimeException("Este produto já está cadastrado nesta unidade");
+        }
+
         Estoque estoque = new Estoque();
 
         estoque.setProduto(produto);
@@ -42,6 +46,8 @@ public class EstoqueService {
 
         return estoqueRepository.save(estoque);
     }
+
+
     public java.util.List<Estoque> listarPorUnidade(Long unidadeId) {
 
         Unidade unidade = unidadeRepository.findById(unidadeId)
@@ -51,5 +57,24 @@ public class EstoqueService {
                 .stream()
                 .filter(estoque -> estoque.getUnidade().getId().equals(unidade.getId()))
                 .toList();
+    }
+
+
+    public void removerProdutoDaUnidade(Long produtoId, Long unidadeId) {
+
+        Produto produto = produtoRepository.findById(produtoId)
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+        Unidade unidade = unidadeRepository.findById(unidadeId)
+                .orElseThrow(() -> new RuntimeException("Unidade não encontrada"));
+
+        Estoque estoque = estoqueRepository.findByProdutoAndUnidade(produto, unidade)
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado nesta unidade"));
+
+        if (Boolean.TRUE.equals(produto.getAtivo())) {
+            throw new RuntimeException("O produto precisa estar desativado para ser excluído");
+        }
+
+        estoqueRepository.delete(estoque);
     }
 }

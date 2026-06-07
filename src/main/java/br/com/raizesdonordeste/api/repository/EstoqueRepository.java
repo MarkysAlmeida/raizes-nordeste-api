@@ -10,4 +10,6 @@ import java.util.Optional;
 public interface EstoqueRepository extends JpaRepository<Estoque, Long> {
 
     Optional<Estoque> findByProdutoAndUnidade(Produto produto, Unidade unidade);
+
+    boolean existsByProdutoAndUnidade(Produto produto, Unidade unidade);
 }

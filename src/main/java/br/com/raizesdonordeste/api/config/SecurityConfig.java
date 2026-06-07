@@ -35,7 +35,7 @@ public class SecurityConfig {
                                 "/index.html",
                                 "/style.css",
                                 "/script.js",
-                                "/usuarios",
+                                "/usuarios/cliente",
                                 "/usuarios/login",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",

@@ -2,27 +2,318 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Raízes do Nordeste</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-    <h1>Raízes do Nordeste</h1>
-
-    <div class="card" id="loginCard">
-        <h2>Login</h2>
-        <input type="email" id="email" placeholder="E-mail">
-        <input type="password" id="senha" placeholder="Senha">
-        <button onclick="login()">Entrar</button>
-        <p id="mensagem"></p>
+<header class="topbar">
+    <div>
+        <h1>Raízes do Nordeste</h1>
+        <p>Sistema de pedidos e gestão de lojas</p>
     </div>
 
-    <div class="card hidden" id="lojasCard">
-        <h2>Lojas disponíveis</h2>
-        <div id="listaLojas"></div>
+    <div class="topbar-actions">
+        <div id="usuarioLogado" class="usuario-logado hidden"></div>
+        <button id="btnSair" class="btn btn-outline hidden" onclick="sair()">Sair</button>
     </div>
-</div>
+</header>
+
+<main class="container">
+
+    <!-- LOGIN -->
+    <section id="telaLogin" class="tela card narrow">
+        <h2>Entrar</h2>
+
+        <label>E-mail</label>
+        <input type="email" id="loginEmail" placeholder="Digite seu e-mail">
+
+        <label>Senha</label>
+        <input type="password" id="loginSenha" placeholder="Digite sua senha">
+
+        <button class="btn btn-primary" onclick="login()">Entrar</button>
+        <button class="btn btn-secondary" onclick="mostrarTela('telaCadastroCliente')">
+            Criar cadastro de cliente
+        </button>
+
+        <p id="msgLogin" class="mensagem"></p>
+    </section>
+
+    <!-- CADASTRO CLIENTE PUBLICO -->
+    <section id="telaCadastroCliente" class="tela card narrow hidden">
+        <h2>Cadastro de Cliente</h2>
+
+        <label>Nome</label>
+        <input type="text" id="cadClienteNome">
+
+        <label>E-mail</label>
+        <input type="email" id="cadClienteEmail">
+
+        <label>Senha</label>
+        <input type="password" id="cadClienteSenha">
+
+        <button class="btn btn-primary" onclick="cadastrarClientePublico()">Cadastrar</button>
+        <button class="btn btn-outline" onclick="mostrarTela('telaLogin')">Voltar</button>
+
+        <p id="msgCadastroCliente" class="mensagem"></p>
+    </section>
+
+    <!-- CLIENTE -->
+    <section id="dashboardCliente" class="tela hidden">
+        <div class="layout-app">
+            <aside class="sidebar">
+                <h2>Cliente</h2>
+                <div id="clientePontosBox" class="pontos-box">Pontos: carregando...</div>
+                <button class="menu-btn" onclick="clienteNovaCompra()">Nova compra</button>
+                <button class="menu-btn" onclick="clienteMostrarPedidosAbertos()">Pedidos em aberto</button>
+                <button class="menu-btn" onclick="clienteMostrarPedidosEntregues()">Pedidos entregues</button>
+            </aside>
+
+            <section class="content">
+                <div id="clienteEtapaLoja" class="painel card">
+                    <h2>Escolha uma loja</h2>
+                    <p class="info">Selecione uma unidade para visualizar os produtos disponíveis.</p>
+                    <div id="listaLojasCliente"></div>
+                </div>
+
+                <div id="clienteEtapaProdutos" class="painel hidden">
+                    <div class="card">
+                        <h2 id="tituloLojaCliente">Produtos disponíveis</h2>
+                        <button class="btn btn-outline" onclick="clienteNovaCompra()">Trocar loja</button>
+                    </div>
+
+                    <div class="cliente-compra">
+                        <div class="card">
+                            <h3>Produtos</h3>
+                            <div id="listaProdutosCliente"></div>
+                        </div>
+
+                        <div class="card carrinho-fixo">
+                            <h3>Carrinho</h3>
+                            <div id="listaCarrinho"></div>
+
+                            <label>Canal do pedido</label>
+                            <select id="canalPedido">
+                                <option value="APP">APP</option>
+                                <option value="WEB">WEB</option>
+                                <option value="BALCAO">BALCÃO</option>
+                                <option value="TOTEM">TOTEM</option>
+                            </select>
+
+                            <label>Forma de pagamento</label>
+                            <select id="formaPagamentoCliente">
+                                <option value="PIX">PIX</option>
+                                <option value="CARTAO_CREDITO">Cartão de crédito</option>
+                                <option value="CARTAO_DEBITO">Cartão de débito</option>
+                            </select>
+
+                            <label class="check">
+                                <input type="checkbox" id="usarPontosCliente">
+                                Usar pontos de fidelidade como desconto
+                            </label>
+
+                            <button class="btn btn-primary" onclick="finalizarPedido()">Confirmar pagamento</button>
+                            <p id="msgCarrinho" class="mensagem"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="clienteEtapaPedidos" class="painel card hidden">
+                    <h2 id="tituloMeusPedidos">Meus pedidos</h2>
+                    <button class="btn btn-secondary" onclick="clienteNovaCompra()">Fazer nova compra</button>
+                    <div id="listaMeusPedidos"></div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <!-- FUNCIONARIO -->
+    <section id="dashboardFuncionario" class="tela hidden">
+        <div class="layout-app">
+            <aside class="sidebar">
+                <h2>Funcionário</h2>
+                <button class="menu-btn" onclick="funcMostrarPedidosAbertos()">Pedidos em aberto</button>
+                <button class="menu-btn" onclick="funcMostrarPedidosEntregues()">Pedidos entregues</button>
+                <button class="menu-btn" onclick="funcMostrarCadastroCliente()">Cadastrar cliente</button>
+            </aside>
+
+            <section class="content">
+                <div id="funcPainelPedidos" class="painel card">
+                    <h2 id="tituloPedidosFuncionario">Pedidos da minha loja</h2>
+                    <button class="btn btn-secondary" onclick="funcAtualizarPedidos()">Atualizar</button>
+                    <div id="listaPedidosFuncionario"></div>
+                </div>
+
+                <div id="funcPainelCadastroCliente" class="painel card hidden">
+                    <h2>Cadastrar cliente</h2>
+
+                    <label>Nome</label>
+                    <input type="text" id="funcClienteNome">
+
+                    <label>E-mail</label>
+                    <input type="email" id="funcClienteEmail">
+
+                    <label>Senha</label>
+                    <input type="password" id="funcClienteSenha">
+
+                    <button class="btn btn-primary" onclick="funcionarioCadastrarCliente()">Cadastrar</button>
+                    <p id="msgFuncionarioCliente" class="mensagem"></p>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <!-- GERENTE -->
+    <section id="dashboardGerente" class="tela hidden">
+        <div class="layout-app">
+            <aside class="sidebar">
+                <h2>Gerente</h2>
+                <button class="menu-btn" onclick="gerMostrarProdutos()">Produtos da loja</button>
+                <button class="menu-btn" onclick="gerMostrarPedidosAbertos()">Pedidos em aberto</button>
+                <button class="menu-btn" onclick="gerMostrarPedidosEntregues()">Pedidos entregues</button>
+                <button class="menu-btn" onclick="gerMostrarCadastroFuncionario()">Cadastrar funcionário</button>
+                <button class="menu-btn" onclick="gerMostrarCadastroProduto()">Cadastrar produto</button>
+            </aside>
+
+            <section class="content">
+                <div id="gerPainelProdutos" class="painel card">
+                    <h2>Produtos da minha loja</h2>
+                    <button class="btn btn-secondary" onclick="carregarProdutosGerente()">Atualizar</button>
+                    <div id="listaProdutosGerente"></div>
+                </div>
+
+                <div id="gerPainelPedidos" class="painel card hidden">
+                    <h2 id="tituloPedidosGerente">Pedidos da minha loja</h2>
+                    <button class="btn btn-secondary" onclick="gerAtualizarPedidos()">Atualizar</button>
+                    <div id="listaPedidosGerente"></div>
+                </div>
+
+                <div id="gerPainelCadastroFuncionario" class="painel card hidden">
+                    <h2>Cadastrar funcionário</h2>
+
+                    <label>Nome</label>
+                    <input type="text" id="gerFuncNome">
+
+                    <label>E-mail</label>
+                    <input type="email" id="gerFuncEmail">
+
+                    <label>Senha</label>
+                    <input type="password" id="gerFuncSenha">
+
+                    <button class="btn btn-primary" onclick="gerenteCadastrarFuncionario()">Cadastrar</button>
+                    <p id="msgGerFunc" class="mensagem"></p>
+                </div>
+
+                <div id="gerPainelCadastroProduto" class="painel card hidden">
+                    <h2>Cadastrar produto na minha loja</h2>
+
+                    <label>Nome</label>
+                    <input type="text" id="gerProdutoNome">
+
+                    <label>Descrição</label>
+                    <textarea id="gerProdutoDescricao"></textarea>
+
+                    <label>Preço</label>
+                    <input type="number" step="0.01" id="gerProdutoPreco">
+
+                    <label>Quantidade inicial</label>
+                    <input type="number" id="gerProdutoQuantidade">
+
+                    <button class="btn btn-primary" onclick="gerenteCadastrarProduto()">Cadastrar produto</button>
+                    <p id="msgGerProduto" class="mensagem"></p>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section id="dashboardAdmin" class="tela hidden">
+        <div class="layout-app">
+            <aside class="sidebar">
+                <h2>Admin</h2>
+                <button class="menu-btn" onclick="admMostrarUsuarios()">Usuários</button>
+                <button class="menu-btn" onclick="admMostrarLojas()">Lojas</button>
+                <button class="menu-btn" onclick="admMostrarPedidosCliente()">Pedidos por cliente</button>
+                <button class="menu-btn" onclick="admMostrarCadastroUsuario()">Cadastrar usuário</button>
+                <button class="menu-btn" onclick="admMostrarCadastroLoja()">Cadastrar loja</button>
+            </aside>
+
+            <section class="content">
+                <div id="admPainelUsuarios" class="painel card">
+                    <h2>Usuários</h2>
+                    <button class="btn btn-secondary" onclick="adminCarregarUsuarios()">Atualizar</button>
+                    <div id="listaAdminUsuarios"></div>
+                </div>
+
+                <div id="admPainelLojas" class="painel card hidden">
+                    <h2>Lojas</h2>
+                    <button class="btn btn-secondary" onclick="adminCarregarLojas()">Atualizar</button>
+                    <div id="listaAdminLojas"></div>
+                </div>
+
+                <div id="admPainelPedidosCliente" class="painel card hidden">
+                    <h2>Pedidos por cliente</h2>
+
+                    <label>Selecione o cliente</label>
+                    <select id="admSelectClientePedidos"></select>
+
+                    <button class="btn btn-primary" onclick="adminCarregarPedidosClienteSelecionado()">
+                        Ver pedidos
+                    </button>
+
+                    <div id="listaAdminPedidosCliente"></div>
+                </div>
+
+                <div id="admPainelCadastroUsuario" class="painel card hidden">
+                    <h2>Cadastrar usuário</h2>
+
+                    <label>Nome</label>
+                    <input type="text" id="admUserNome">
+
+                    <label>E-mail</label>
+                    <input type="email" id="admUserEmail">
+
+                    <label>Senha</label>
+                    <input type="password" id="admUserSenha">
+
+                    <label>Perfil</label>
+                    <select id="admUserRole" onchange="adminAtualizarCampoLojaUsuario()">
+                        <option value="CLIENTE">Cliente</option>
+                        <option value="FUNCIONARIO">Funcionário</option>
+                        <option value="GERENTE">Gerente</option>
+                    </select>
+
+                    <div id="admGrupoUnidadeUsuario" class="hidden">
+                        <label>Loja</label>
+                        <select id="admUserUnidadeId"></select>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="adminCadastrarUsuario()">Cadastrar usuário</button>
+                    <p id="msgAdmUser" class="mensagem"></p>
+                </div>
+
+                <div id="admPainelCadastroLoja" class="painel card hidden">
+                    <h2>Cadastrar loja</h2>
+
+                    <label>Nome</label>
+                    <input type="text" id="admLojaNome">
+
+                    <label>Cidade</label>
+                    <input type="text" id="admLojaCidade">
+
+                    <label>Endereço</label>
+                    <input type="text" id="admLojaEndereco">
+
+                    <button class="btn btn-primary" onclick="adminCadastrarLoja()">Cadastrar loja</button>
+                    <p id="msgAdmLoja" class="mensagem"></p>
+                </div>
+
+            </section>
+        </div>
+    </section>
+
+</main>
 
 <script src="script.js"></script>
 </body>

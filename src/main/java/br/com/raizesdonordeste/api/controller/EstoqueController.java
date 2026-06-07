@@ -26,4 +26,14 @@ public class EstoqueController {
     public java.util.List<Estoque> listarPorUnidade(@PathVariable Long unidadeId) {
         return estoqueService.listarPorUnidade(unidadeId);
     }
+
+
+    @DeleteMapping("/produto/{produtoId}/unidade/{unidadeId}")
+    @PreAuthorize("hasAnyAuthority('GERENTE', 'ADMINISTRADOR')")
+    public void removerProdutoDaUnidade(
+            @PathVariable Long produtoId,
+            @PathVariable Long unidadeId) {
+
+        estoqueService.removerProdutoDaUnidade(produtoId, unidadeId);
+    }
 }

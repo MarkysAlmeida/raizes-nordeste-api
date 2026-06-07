@@ -1,6 +1,7 @@
 package br.com.raizesdonordeste.api.controller;
 
 import br.com.raizesdonordeste.api.dto.PagamentoRequest;
+import br.com.raizesdonordeste.api.dto.PagamentoResponse;
 import br.com.raizesdonordeste.api.model.Pagamento;
 import br.com.raizesdonordeste.api.service.PagamentoService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,10 +19,11 @@ public class PagamentoController {
 
     @PostMapping("/{pedidoId}")
     @PreAuthorize("hasAnyAuthority('CLIENTE', 'ADMINISTRADOR')")
-    public Pagamento processar(
+    public PagamentoResponse processar(
             @PathVariable Long pedidoId,
             @RequestBody PagamentoRequest request) {
 
-        return pagamentoService.processar(pedidoId, request);
+        Pagamento pagamento = pagamentoService.processar(pedidoId, request);
+        return new PagamentoResponse(pagamento);
     }
 }
