@@ -711,7 +711,7 @@ async function gerenteCadastrarFuncionario() {
         setMensagem("msgGerFunc", e.message, "erro");
     }
 }
-
+//painel gerente
 async function carregarProdutosGerente() {
     if (!usuario.unidadeId) {
         document.getElementById("listaProdutosGerente").innerHTML =
@@ -734,6 +734,7 @@ async function carregarProdutosGerente() {
         if (p.ativo === false) {
             div.innerHTML = `
                 <strong>${p.nome}</strong><br>
+                <span class="badge">ID do produto: ${p.id}</span><br>
                 ${p.descricao || ""}<br>
                 ${formatarDinheiro(p.preco)}
                 <span class="badge badge-red">Inativo</span>
@@ -750,6 +751,7 @@ async function carregarProdutosGerente() {
 
         div.innerHTML = `
             <strong>${p.nome}</strong><br>
+            <span class="badge">ID do produto: ${p.id}</span><br>
             ${p.descricao || ""}<br>
             ${formatarDinheiro(p.preco)}
             <span class="badge">Ativo</span>
@@ -758,10 +760,13 @@ async function carregarProdutosGerente() {
             <div id="editProduto${p.id}" class="hidden">
                 <label>Nome</label>
                 <input id="prodNome${p.id}" value="${p.nome}">
+
                 <label>Descrição</label>
                 <textarea id="prodDesc${p.id}">${p.descricao || ""}</textarea>
+
                 <label>Preço</label>
                 <input type="number" step="0.01" id="prodPreco${p.id}" value="${p.preco}">
+
                 <label>Quantidade</label>
                 <input type="number" id="prodQtd${p.id}" value="${estoque.quantidade}">
             </div>
