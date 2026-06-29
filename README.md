@@ -243,15 +243,23 @@ Authorization: Bearer SEU_TOKEN_AQUI
 
 ---
 
-## 11. Sequência completa de testes da API
+## 11. O que testar pelo Swagger ou Postman
 
-A sequência abaixo foi montada para facilitar a execução dos testes pelo Swagger ou Postman. Os corpos JSON já estão prontos para copiar e colar.
+A sequência abaixo foi organizada para facilitar a validação da API pelo Swagger ou Postman. Os exemplos de JSON estão prontos para copiar e colar.
+
+Antes de iniciar, acesse o Swagger em:
+
+```text
+http://localhost:8080/swagger-ui/index.html
+```
+
+Faça login com o usuário adequado, copie o token retornado e clique em **Authorize** para liberar o acesso às rotas protegidas.
 
 ---
 
-# T01 - Login válido
+### Login válido
 
-Objetivo: validar autenticação com usuário existente.
+Valida se um usuário cadastrado consegue autenticar no sistema.
 
 Endpoint:
 
@@ -277,9 +285,9 @@ Retorna token JWT.
 
 ---
 
-# T02 - Login inválido
+### Login inválido
 
-Objetivo: validar erro de senha incorreta.
+Valida se o sistema bloqueia autenticação com senha incorreta.
 
 Endpoint:
 
@@ -292,7 +300,7 @@ Body:
 ```json
 {
   "email": "cliente@raizes.com",
-  "senha": "1234567"
+  "senha": "senha_errada"
 }
 ```
 
@@ -305,26 +313,9 @@ Retorna erro de autenticação.
 
 ---
 
-# T03 - Acesso a rota sem autorização
+### Acesso a rota sem permissão
 
-Objetivo: validar controle de acesso por perfil.
-
-Passo 1: faça login como cliente.
-
-```http
-POST /usuarios/login
-```
-
-Body:
-
-```json
-{
-  "email": "cliente@raizes.com",
-  "senha": "123456"
-}
-```
-
-Passo 2: tente acessar uma rota administrativa com token de cliente.
+Valida o controle de acesso por perfil. Faça login como cliente e tente acessar uma rota administrativa.
 
 Endpoint:
 
@@ -339,13 +330,11 @@ Resultado esperado:
 Cliente não possui permissão para listar todos os usuários.
 ```
 
-Este print é uma boa evidência de segurança para o trabalho.
-
 ---
 
-# T04 - Cadastro de cliente
+### Cadastro público de cliente
 
-Objetivo: validar cadastro público de cliente.
+Valida se um novo cliente pode ser cadastrado pela rota pública.
 
 Endpoint:
 
@@ -370,7 +359,7 @@ Resultado esperado:
 Cliente cadastrado com perfil CLIENTE.
 ```
 
-Atenção: se o e-mail já existir, altere para outro, por exemplo:
+Se o e-mail já existir, altere para outro, por exemplo:
 
 ```text
 cliente.api.teste2@raizes.com
@@ -378,11 +367,11 @@ cliente.api.teste2@raizes.com
 
 ---
 
-# T05 - Cadastro de gerente
+### Cadastro de gerente
 
-Objetivo: validar que o administrador consegue cadastrar gerente em uma unidade.
+Valida se o administrador consegue cadastrar um gerente para uma unidade.
 
-Passo 1: faça login como administrador.
+Faça login como administrador:
 
 ```http
 POST /usuarios/login
@@ -397,7 +386,7 @@ Body:
 }
 ```
 
-Passo 2: autorize o Swagger/Postman com o token do administrador.
+Depois, autorize o Swagger/Postman com o token do administrador.
 
 Endpoint:
 
@@ -428,11 +417,11 @@ Se a unidade 3 já possuir gerente ativo, crie uma nova unidade pelo endpoint `/
 
 ---
 
-# T06 - Cadastro de gerente na mesma unidade
+### Tentativa de cadastrar gerente na mesma unidade
 
-Objetivo: validar regra de negócio que impede dois gerentes ativos na mesma unidade.
+Valida a regra que impede dois gerentes ativos na mesma unidade.
 
-Use o token do administrador.
+Use token de administrador.
 
 Endpoint:
 
@@ -461,9 +450,67 @@ Erro informando que a unidade já possui gerente ativo.
 
 ---
 
-# T07 - Criar pedido válido
+### Cadastro de funcionário
 
-Objetivo: validar criação de pedido com produto existente, unidade existente, estoque disponível e canal válido.
+Valida se o gerente ou administrador consegue cadastrar um funcionário vinculado a uma unidade.
+
+Opção usando gerente:
+
+```http
+POST /usuarios/gerente/cadastrar
+```
+
+Body:
+
+```json
+{
+  "nome": "Funcionário Teste",
+  "email": "funcionario.teste@raizes.com",
+  "senha": "123456",
+  "role": "FUNCIONARIO",
+  "unidadeId": 1
+}
+```
+
+Resultado esperado:
+
+```text
+200 OK ou 201 Created
+Funcionário cadastrado com perfil FUNCIONARIO e vinculado à unidade.
+```
+
+Também é possível cadastrar funcionário como administrador:
+
+```http
+POST /usuarios/admin/cadastrar
+```
+
+Body:
+
+```json
+{
+  "nome": "Funcionário Admin Teste",
+  "email": "funcionario.admin.teste@raizes.com",
+  "senha": "123456",
+  "role": "FUNCIONARIO",
+  "unidadeId": 1
+}
+```
+
+Teste negativo recomendado: tente cadastrar outro usuário com o mesmo e-mail.
+
+Resultado esperado:
+
+```text
+400 Bad Request
+Erro informando que o e-mail já está cadastrado.
+```
+
+---
+
+### Criar pedido válido
+
+Valida criação de pedido com cliente existente, unidade existente, produto existente, estoque disponível e canal válido.
 
 Faça login como cliente e autorize com o token do cliente.
 
@@ -497,7 +544,7 @@ Pedido criado com status AGUARDANDO_PAGAMENTO.
 Estoque do produto reduzido na unidade.
 ```
 
-Guarde o ID retornado do pedido. Ele será usado no teste de pagamento e cancelamento.
+Guarde o ID retornado do pedido para usar nos testes de pagamento e cancelamento.
 
 Exemplo:
 
@@ -507,9 +554,9 @@ pedidoId = 35
 
 ---
 
-# T08 - Pedido com canal que não existe
+### Pedido com canal inexistente
 
-Objetivo: validar erro ao informar um canalPedido inválido.
+Valida erro quando o campo `canalPedido` recebe valor fora do enum permitido.
 
 Endpoint:
 
@@ -548,9 +595,9 @@ APP, TOTEM, BALCAO, WEB
 
 ---
 
-# T09 - Pedido com estoque insuficiente
+### Pedido com estoque insuficiente
 
-Objetivo: validar bloqueio quando a quantidade solicitada é maior que o estoque disponível.
+Valida bloqueio quando a quantidade solicitada é maior que o estoque disponível.
 
 Endpoint:
 
@@ -584,9 +631,9 @@ Pedido não deve ser criado.
 
 ---
 
-# T10 - Pedido com produto que não existe
+### Pedido com produto inexistente
 
-Objetivo: validar erro quando o produto informado não existe no banco.
+Valida erro quando o produto informado não existe no banco.
 
 Endpoint:
 
@@ -620,17 +667,15 @@ Pedido não deve ser criado.
 
 ---
 
-# T11 - Aprovação de pagamento
+### Aprovar pagamento
 
-Objetivo: validar pagamento simulado e alteração automática do pedido para EM_PREPARO.
+Valida o pagamento simulado e a alteração automática do pedido para `EM_PREPARO`.
 
 Pré-condição:
 
 ```text
 Ter um pedido com status AGUARDANDO_PAGAMENTO.
 ```
-
-Use o `pedidoId` retornado no teste T07.
 
 Endpoint:
 
@@ -666,9 +711,9 @@ Importante: não use `PATCH /pedidos/{id}/status?status=PAGO`. O status PAGO nã
 
 ---
 
-# T12 - Uso de pontos no pagamento
+### Usar pontos no pagamento
 
-Objetivo: validar desconto por pontos de fidelidade.
+Valida o desconto por pontos de fidelidade.
 
 Pré-condição:
 
@@ -676,14 +721,9 @@ Pré-condição:
 O cliente precisa possuir pontos disponíveis.
 ```
 
-Caso o cliente ainda não tenha pontos, entregue um pedido antes:
+Caso o cliente ainda não tenha pontos, entregue um pedido antes usando as rotas de atualização de status.
 
-```http
-PATCH /pedidos/{id}/status?status=SAIU_PARA_ENTREGA
-PATCH /pedidos/{id}/status?status=ENTREGUE
-```
-
-Depois crie um novo pedido e pague usando pontos.
+Depois, crie um novo pedido e pague usando pontos.
 
 Endpoint:
 
@@ -710,9 +750,9 @@ Pontos usados são descontados do cliente.
 
 ---
 
-# T13 - Entrega gera pontos
+### Atualizar status e gerar pontos de fidelidade
 
-Objetivo: validar geração de pontos apenas após a entrega do pedido.
+Valida que o cliente só recebe pontos quando o pedido é entregue.
 
 Pré-condição:
 
@@ -722,28 +762,16 @@ Pedido pago e com status EM_PREPARO.
 
 Use token de funcionário, gerente ou administrador.
 
-Passo 1:
+Primeiro altere para saiu para entrega:
 
 ```http
 PATCH /pedidos/{id}/status?status=SAIU_PARA_ENTREGA
 ```
 
-Exemplo:
-
-```http
-PATCH /pedidos/35/status?status=SAIU_PARA_ENTREGA
-```
-
-Passo 2:
+Depois altere para entregue:
 
 ```http
 PATCH /pedidos/{id}/status?status=ENTREGUE
-```
-
-Exemplo:
-
-```http
-PATCH /pedidos/35/status?status=ENTREGUE
 ```
 
 Resultado esperado:
@@ -767,9 +795,9 @@ Campo pontosFidelidade com valor atualizado.
 
 ---
 
-# T14 - Cancelamento de pedido
+### Cancelar pedido
 
-Objetivo: validar cancelamento de pedido ainda não entregue.
+Valida o cancelamento de pedido ainda não entregue.
 
 Pré-condição:
 
@@ -808,9 +836,9 @@ Se pontos foram usados no pagamento, os pontos são devolvidos ao cliente.
 
 ---
 
-# T15 - Pedido entregue não pode ser cancelado
+### Pedido entregue não pode ser cancelado
 
-Objetivo: validar regra negativa de cancelamento.
+Valida a regra negativa de cancelamento.
 
 Pré-condição:
 
@@ -833,33 +861,32 @@ Erro informando que pedido entregue não pode ser cancelado.
 
 ---
 
-## 12. Sequência recomendada para prints no trabalho
+## 12. O que mostrar como evidência no trabalho
 
-Para montar as evidências no documento final, tire prints nesta ordem:
+Para montar as evidências no documento final, tire prints dos seguintes testes:
 
-1. Login válido retornando token.
-2. Login inválido retornando erro.
-3. Acesso sem autorização retornando 403.
-4. Cadastro de cliente.
-5. Cadastro de gerente.
-6. Erro ao cadastrar segundo gerente na mesma unidade.
-7. Criação de pedido válido.
-8. Erro de canal inexistente.
-9. Erro de estoque insuficiente.
-10. Erro de produto inexistente.
-11. Pagamento aprovado.
-12. Uso de pontos no pagamento.
-13. Cancelamento de pedido.
+- login válido retornando token;
+- login inválido retornando erro;
+- acesso sem permissão retornando 403;
+- cadastro público de cliente;
+- cadastro de gerente;
+- tentativa de cadastrar gerente duplicado na mesma unidade;
+- cadastro de funcionário;
+- criação de pedido válido;
+- pedido com canal inexistente;
+- pedido com estoque insuficiente;
+- pedido com produto inexistente;
+- pagamento aprovado;
+- uso de pontos no pagamento;
+- cancelamento de pedido.
 
 Em cada print, tente mostrar:
 
 - endpoint utilizado;
 - método HTTP;
-- body enviado;
+- body enviado, quando houver;
 - status da resposta;
 - resposta da API.
-
----
 
 ## 13. Endpoints principais
 
@@ -868,6 +895,8 @@ Em cada print, tente mostrar:
 ```http
 POST /usuarios/login
 POST /usuarios/cliente
+POST /usuarios/funcionario/cadastrar-cliente
+POST /usuarios/gerente/cadastrar
 POST /usuarios/admin/cadastrar
 GET /usuarios
 GET /usuarios/{id}
@@ -946,6 +975,8 @@ O status PAGO existe por compatibilidade, mas não deve ser definido manualmente
 ## 15. Regras de negócio importantes
 
 - Somente clientes podem se cadastrar publicamente.
+- Funcionário pode cadastrar clientes.
+- Gerente pode cadastrar clientes e funcionários da sua unidade.
 - Administrador pode cadastrar clientes, funcionários e gerentes.
 - Cada unidade pode possuir somente um gerente ativo.
 - Funcionários e gerentes devem estar vinculados a uma unidade.
